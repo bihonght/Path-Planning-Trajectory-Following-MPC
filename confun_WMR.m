@@ -1,10 +1,12 @@
 function [c, ceq] = confun_WMR(X)
 
 %% desired trajectory
-global num_states;
+global N;
 % initial position and orientation
-% x_initial=[-1;-1;0];
-x_initial=[0;0;pi/2];
+
+global x_initial;
+% x_initial=[-0.2;0;pi/2];
+% x_initial = X(1:3);
 % time interval in each step
 global T;
 
@@ -14,7 +16,7 @@ c = [];
 % Nonlinear equality constraints
 ceq = [];
 x_next_pred = [0;0;0];
-for i=0:num_states
+for i=0:N
     x = X(5*i+1:5*i+3);          % actual trajectory from X                      
     if (i==0)  
         ceq(i+1,:) = x-x_initial;
@@ -22,7 +24,7 @@ for i=0:num_states
         ceq(i+1,:) = x-x_next_pred;
     end
     
-    if i<num_states
+    if i<N
         u = X(5*i+4:5*i+5);
         [phi_next,x_next,y_next] = compute_next_pose_old(x(3),x(1),x(2),u(1),u(2),T); 
         x_next_pred = [x_next;y_next;phi_next];

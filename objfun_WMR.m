@@ -1,6 +1,6 @@
 function f = objfun_WMR(X)
 
-global num_states;
+global N;
 %% weights
 Q=[1, 0, 0;
     0, 1, 0;
@@ -8,23 +8,23 @@ Q=[1, 0, 0;
 R = [0.1, 0; 0, 0.1];
 %% desired trajectory
 
-X_desired = desired_trajectory();                                    
+load X_desired_window X_desired_window
 
 f = 0;
-for i=0:num_states
+for i=0:N
 
     x = X(5*i+1:5*i+3);     %% actual trajectory from X
-    x_r = X_desired(5*i+1:5*i+3);  
+    x_r = X_desired_window(5*i+1:5*i+3);  
 
-    if i==num_states
+    if i==N
         f = f + (x-x_r)'*Q*(x-x_r);
     elseif i==0
         u = X(4:5);
-        u_r = X_desired(4:5);
+        u_r = X_desired_window(4:5);
         f = f + (u-u_r)'*R*(u-u_r);
     else 
         u = X(5*i+4:5*i+5);
-        u_r = X_desired(5*i+4:5*i+5);
+        u_r = X_desired_window(5*i+4:5*i+5);
         f = f + (x-x_r)'*Q*(x-x_r) + (u-u_r)'*R*(u-u_r);
     end
 

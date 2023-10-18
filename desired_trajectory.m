@@ -31,18 +31,27 @@ for j=1:num_states
         turn_rate = -pi/6; % Random turn rate between -1 and 1
         % velocity = 0.2 + 0.4 * rand(); % Random velocity between 0.2 and 0.6 (adjust as needed)
         velocity = 0.3;
-        if j>num_states/4 && j<num_states/3
-            turn_rate = 0;
+        if j>num_states/8 && j<num_states/5
+            turn_rate = pi/7;
             velocity = 0.4;
+        elseif j>num_states/5 && j<num_states/3
+            turn_rate = -pi/4;
+            velocity = 0.25;
         elseif j>num_states/3 && j<num_states/2
-            turn_rate = pi/5;
+            turn_rate = pi/4.5;
             velocity = 0.3;
-        elseif j>num_states/2 && j<3*num_states/4
-            turn_rate = -pi/8;
-            velocity = 0.3;
-        elseif j>3*num_states/4
+        elseif j>num_states/2 && j<num_states*0.55
             turn_rate = 0;
+            velocity = 0.5;
+        elseif j>num_states*0.7 && j<num_states*0.85
+            turn_rate = -pi/5;
             velocity = 0.4;
+        elseif j>num_states*0.85 && j<num_states*0.95
+            turn_rate = pi/9;
+            velocity = 0.4;
+        elseif j>num_states*0.95
+            turn_rate = -pi/9;
+            velocity = 0.55;
         end
         X_desired = [X_desired; x_r_next; velocity; turn_rate];
     else
