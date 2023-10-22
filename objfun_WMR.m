@@ -4,7 +4,7 @@ global N;
 %% weights
 Q=[1, 0, 0;
     0, 1, 0;
-    0, 0, 0.5];
+    0, 0, 1];     % the weight of Q was 0.5
 R = [0.1, 0; 0, 0.1];
 %% desired trajectory
 
@@ -15,9 +15,12 @@ for i=0:N
 
     x = X(5*i+1:5*i+3);     %% actual trajectory from X
     x_r = X_desired_window(5*i+1:5*i+3);  
+    
+    dx = [x(1)-x_r(1);x(2)-x_r(2); wrapToPi(x(3)-x_r(3))];
 
     if i==N
-        f = f + (x-x_r)'*Q*(x-x_r);
+        % f = f + (x-x_r)'*Q*(x-x_r);
+        f = f + dx'*Q*dx;
     elseif i==0
         u = X(4:5);
         u_r = X_desired_window(4:5);
@@ -25,7 +28,8 @@ for i=0:N
     else 
         u = X(5*i+4:5*i+5);
         u_r = X_desired_window(5*i+4:5*i+5);
-        f = f + (x-x_r)'*Q*(x-x_r) + (u-u_r)'*R*(u-u_r);
+        % f = f + (x-x_r)'*Q*(x-x_r) + (u-u_r)'*R*(u-u_r);
+        f = f + dx'*Q*dx + (u-u_r)'*R*(u-u_r);
     end
 
 end

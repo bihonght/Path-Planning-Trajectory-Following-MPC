@@ -33,10 +33,11 @@ for j=1:num_states
         velocity = 0.3;
         if j>num_states/8 && j<num_states/5
             turn_rate = pi/7;
+            % turn_rate = pi/4;
             velocity = 0.4;
         elseif j>num_states/5 && j<num_states/3
             turn_rate = -pi/4;
-            velocity = 0.25;
+            velocity = 0.4;
         elseif j>num_states/3 && j<num_states/2
             turn_rate = pi/4.5;
             velocity = 0.3;

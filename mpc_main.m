@@ -8,28 +8,34 @@ T = 0.5;
 global num_states;
 num_states = 80; 
 
+% starting point of actual robot
+global x_initial;               
+x_initial = [-0.3;0;pi/2];
+
 % Make a starting guess at the solution
-X0 = zeros(5*num_states+3,1);  
+x_start = zeros(23,1);
+% X0 = zeros(5*num_states+3,1);  
 
 % prediction horizon
 global N;
 N = 4; 
 
+% noise add decision
+noise_switch = 1; 
+
 % generate the desired trajectory
-X_desired = desired_trajectory();                                    
-global x_initial;               % starting point of actual robot
-x_initial = [-0.5;0;pi/2];
+X_desired = desired_trajectory();     
 
 %% lower bounds and upper bounds
 x_min=-10;
 x_max=10;
 y_min=-10;
 y_max=10;
-theta_min=-pi;
-theta_max=pi;
+theta_min=-1.e1000;
+theta_max=1.e1000;
 
-v_min=-0.5;
-v_max=0.5;
+v_min=-1;
+v_max=1;
 w_min=-pi;
 w_max=pi;
 
@@ -44,28 +50,39 @@ UB = [UB; x_max; y_max; theta_max];
 
 %% call fmincon
 start_ = 1;                         %starting poses for each moving horizon
+% x_initial = (X(start_:start_+2))';
+
 while (1)                    
     end_ = start_ + (N*5 + 3) - 1;
     
     if (end_ < 5*num_states+3)
 
         X_desired_window = X_desired(start_:end_);
-        save X_desired_window X_desired_window
+        save X_desired_window X_desired_window;             
         options = optimoptions('fmincon','Algorithm','active-set');
-        [X(start_:end_),fval] = fmincon('objfun_WMR',X0(start_:end_),[],[],[],[],LB,UB,'confun_WMR',options);
-        % break
+        [X(start_:end_),fval] = fmincon('objfun_WMR',x_start,[],[],[],[],LB,UB,'confun_WMR',options);
+         % adding noise
+        if (noise_switch) 
+            X(start_:end_) = X(start_:end_)+gen_noise();
+        end
+
     else
-        end_ = length(X0);
+        % last horizon window
+        end_ = length(X_desired);
         X_desired_window = X_desired(start_:end_);
-        save X_desired_window X_desired_window
+        save X_desired_window X_desired_window;
         N = fix((end_ - start_)/5);
 
         options = optimoptions('fmincon','Algorithm','active-set');
-        [X(start_:end_),fval] = fmincon('objfun_WMR',X0(start_:end_),[],[],[],[],LB,UB,'confun_WMR',options);
+        [X(start_:end_),fval] = fmincon('objfun_WMR',x_start,[],[],[],[],LB,UB,'confun_WMR',options);
+     
         break
     end
+
+    x_start = X(start_:end_)';          % update for a starting guess for each horizon step
     start_ = start_ + 5;                % update for the next horizon
     x_initial = (X(start_:start_+2))';  % update for the next horizon
+    
 end
 
 %% for drawing of the robot heading
@@ -75,8 +92,7 @@ arrow_length = 0.1; % length of the arrow (for drawing robot orientation)
 load X_desired
 
 %% draw the figure
-frames = [];
-fig = figure()
+figure(1)
 
 hold on;
 axis('equal')
@@ -104,19 +120,5 @@ for j=0:num_states
     plot(x_d(1),y_d(1),'rd') % global coordinate
     quiver(x(1),y(1), arrow_length*cos(phi(1)), arrow_length*sin(phi(1)), 0, 'Color', 'b') 
     quiver(x_d(1),y_d(1), arrow_length*cos(phi_d(1)), arrow_length*sin(phi_d(1)), 0, 'Color', 'r')
-    
-    % Capture the frame and save as an image
-    frame = getframe(fig);
-    frames = [frames, frame];
-end
 
-% Create a GIF
-filename = 'robot_trajectory.gif';
-for i = 1:length(frames)
-    [A, map] = rgb2ind(frame2im(frames(i), fig), 256);
-    if i == 1
-        imwrite(A, map, filename, 'gif', 'Loopcount', inf, 'DelayTime', 0.2);
-    else
-        imwrite(A, map, filename, 'gif', 'WriteMode', 'append', 'DelayTime', 0.2);
-    end
 end
